@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS DigitalLibrary;
+USE DigitalLibrary;
+
 CREATE TABLE Books (
     BookID INT PRIMARY KEY AUTO_INCREMENT,
     Title VARCHAR(200) NOT NULL,
@@ -54,31 +57,32 @@ INSERT INTO IssuedBooks (StudentID, BookID, IssueDate, ReturnDate) VALUES
 (3, 2, '2024-01-15', '2024-01-25'),
 (1, 8, CURDATE() - INTERVAL 2 DAY, NULL);
 
-SELECT 
-    s.StudentID, s.FullName, s.Email, b.Title AS BookTitle, b.Category, ib.IssueDate,
-    DATEDIFF(CURDATE(), ib.IssueDate) AS DaysOverdue
+SELECT s.StudentID, s.FullName, s.Email, b.Title AS BookTitle, b.Category, ib.IssueDate, DATEDIFF(CURDATE(), ib.IssueDate) AS DaysOverdue
 FROM IssuedBooks ib
 JOIN Students s ON ib.StudentID = s.StudentID
 JOIN Books b ON ib.BookID = b.BookID
-WHERE ib.ReturnDate IS NULL
-AND DATEDIFF(CURDATE(), ib.IssueDate) > 14
+WHERE ib.ReturnDate IS NULL AND DATEDIFF(CURDATE(), ib.IssueDate) > 14
 ORDER BY DaysOverdue DESC;
 
-SELECT
-    b.Category,COUNT(ib.IssueID) AS TotalBorrows
+SELECT b.Category, COUNT(ib.IssueID) AS TotalBorrows
 FROM IssuedBooks ib
 JOIN Books b ON ib.BookID = b.BookID
 GROUP BY b.Category
 ORDER BY TotalBorrows DESC;
 
-SELECT
-    s.StudentID, s.FullName, s.Email,
-    MAX(ib.IssueDate) AS LastBorrowDate
-FROM Students s
-LEFT JOIN IssuedBooks ib ON s.StudentID = ib.StudentID
-GROUP BY s.StudentID, s.FullName, s.Email
-HAVING MAX(ib.IssueDate) < CURDATE() - INTERVAL 3 YEAR
-OR MAX(ib.IssueDate) IS NULL;
+START TRANSACTION;
+
+DELETE FROM IssuedBooks
+WHERE StudentID IN (
+    SELECT StudentID FROM (
+        SELECT s.StudentID
+        FROM Students s
+        LEFT JOIN IssuedBooks ib ON s.StudentID = ib.StudentID
+        GROUP BY s.StudentID
+        HAVING MAX(ib.IssueDate) < CURDATE() - INTERVAL 3 YEAR
+            OR MAX(ib.IssueDate) IS NULL
+    ) AS inactive_students
+);
 
 DELETE FROM Students
 WHERE StudentID NOT IN (
@@ -86,3 +90,5 @@ WHERE StudentID NOT IN (
     FROM IssuedBooks
     WHERE IssueDate >= CURDATE() - INTERVAL 3 YEAR
 );
+
+COMMIT;
