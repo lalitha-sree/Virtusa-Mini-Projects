@@ -44,18 +44,18 @@ INSERT INTO Students (FullName, Email, EnrollDate) VALUES
 ('Frank Lee', 'frank@college.edu', '2018-11-30');
 
 INSERT INTO IssuedBooks (StudentID, BookID, IssueDate, ReturnDate) VALUES
-(1, 1, CURDATE() - INTERVAL 20 DAY, NULL),
-(2, 3, CURDATE() - INTERVAL 30 DAY, NULL),
-(3, 5, CURDATE() - INTERVAL 16 DAY, NULL),
-(1, 2, CURDATE() - INTERVAL 10 DAY, CURDATE() - INTERVAL 3 DAY),
-(4, 4, CURDATE() - INTERVAL 5 DAY, CURDATE()),
+(1, 1, '2026-05-08', NULL),
+(2, 3, '2026-05-28', NULL),
+(3, 5, '2026-05-12', NULL),
+(1, 2, '2026-05-18', '2026-05-25'),
+(4, 4, '2026-05-23', '2026-05-28'),
 (1, 1, '2022-08-01', '2022-08-10'),
 (2, 1, '2022-09-01', '2022-09-12'),
 (5, 6, '2021-05-01', '2021-05-14'),
 (6, 7, '2020-02-01', '2020-02-15'),
 (4, 3, '2023-06-01', '2023-06-10'),
 (3, 2, '2024-01-15', '2024-01-25'),
-(1, 8, CURDATE() - INTERVAL 2 DAY, NULL);
+(1, 8, '2026-05-26', NULL);
 
 SELECT s.StudentID, s.FullName, s.Email, b.Title AS BookTitle, b.Category, ib.IssueDate, DATEDIFF(CURDATE(), ib.IssueDate) AS DaysOverdue
 FROM IssuedBooks ib
